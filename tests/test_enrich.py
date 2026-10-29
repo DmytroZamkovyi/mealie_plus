@@ -67,3 +67,8 @@ def test_prompts_mention_only_what_is_wanted():
     assert "aliases" not in food_prompt(["морква"], ["Овочі"], True, False)
     p = recipe_prompt("Борщ", ["буряк"], 4, ["Каструля"], False, ["calories"], False)
     assert "description" not in p and "calories" in p and "tools" not in p
+
+
+def test_tools_prompt_is_strict_and_sees_the_steps():
+    p = recipe_prompt("Шакшука", ["яйце"], 2, [], False, [], True, ["Розбийте яйця.", "Смажте 5 хв."])
+    assert "Never list basic items" in p and "Розбийте яйця." in p

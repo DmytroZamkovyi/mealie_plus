@@ -230,6 +230,11 @@ class Enricher:
                 for i in recipe.get("recipeIngredient") or []
             ]
             ingredients = [i for i in ingredients if i]
+            steps = [
+                (s.get("text") or "").strip()[:400]
+                for s in recipe.get("recipeInstructions") or []
+                if (s.get("text") or "").strip()
+            ]
 
             body: dict[str, Any] = {}
             if do_text:
@@ -241,7 +246,7 @@ class Enricher:
                         "Shopping Sync recipe",
                         core.recipe_prompt(
                             recipe["name"], ingredients, recipe.get("recipeServings") or recipe.get("recipeYield"),
-                            list(tools), need_desc, need_keys, need_tools,
+                            list(tools), need_desc, need_keys, need_tools, steps,
                         ),
                     )
                     patch = core.validate_recipe(answer, need_desc, need_keys, need_tools)

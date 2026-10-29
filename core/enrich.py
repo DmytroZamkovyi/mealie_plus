@@ -163,6 +163,7 @@ def recipe_prompt(
     want_description: bool,
     want_nutrition: list[str],
     want_tools: bool,
+    steps: list[str] | None = None,
 ) -> str:
     fields = []
     if want_description:
@@ -175,15 +176,19 @@ def recipe_prompt(
         )
     if want_tools:
         fields.append(
-            '"tools": up to 4 kitchen tools needed, preferably chosen from '
+            '"tools": only special kitchen equipment that the cooking STEPS below explicitly use '
+            "(for example a blender, oven, slow cooker, grater, whisk, a specific pan). Never list basic items "
+            "(knife, cutting board, bowl, spoon) and never guess: if the steps do not clearly need special "
+            "equipment return []. At most 4. Prefer names from this list: "
             + json.dumps(tool_names, ensure_ascii=False)
-            + " (new short Ukrainian names are allowed), [] if none are special"
+            + " (a new short Ukrainian name is allowed only if clearly needed)"
         )
     return (
         "You help fill in a recipe card. Answer ONLY with a JSON object with these fields: "
         + "; ".join(fields)
         + f".\nRecipe: {name}\nServings: {servings or 'unknown'}\nIngredients:\n"
         + "\n".join(f"- {i}" for i in ingredients[:40])
+        + ("\nSteps:\n" + "\n".join(f"{n}. {s}" for n, s in enumerate(steps[:25], 1)) if steps else "")
     )
 
 
