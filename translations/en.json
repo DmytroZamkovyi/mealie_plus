@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Mealie",
+        "description": "Mealie address and a long-lived user token (Mealie → Profile → API tokens).",
+        "data": {
+          "url": "Mealie URL",
+          "token": "API token"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New token",
+        "data": {
+          "token": "API token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to Mealie",
+      "invalid_auth": "Token rejected"
+    },
+    "abort": {
+      "already_configured": "This Mealie is already configured",
+      "reauth_successful": "Token updated",
+      "single_instance_allowed": "Already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sync options",
+        "description": "A Home Assistant list named \"<prefix><Mealie list name>\" is synced with that Mealie list. Webhook (POST, triggers a sync): {webhook}",
+        "data": {
+          "prefix": "List name prefix",
+          "interval": "Sync interval",
+          "purge_days": "Remove ticked items every N days (0 = never)",
+          "propagate_deletes": "Deleting an item in Home Assistant deletes it in Mealie"
+        }
+      }
+    }
+  },
+  "entity": {
+    "button": {
+      "sync_now": {
+        "name": "Sync now"
+      }
+    }
+  },
+  "issues": {
+    "ambiguous_food": {
+      "title": "What does \"{text}\" mean?",
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "Choose a food",
+            "description": "\"{text}\" matches several Mealie foods. Pick one; the choice is remembered.",
+            "data": {
+              "food": "Food"
+            }
+          }
+        }
+      }
+    }
+  },
+  "services": {
+    "sync_now": {
+      "name": "Sync now",
+      "description": "Runs the sync immediately."
+    }
+  }
+}

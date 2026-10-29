@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Підключення до Mealie",
+        "description": "Адреса Mealie та довгоживучий токен користувача (Mealie → Профіль → API-токени).",
+        "data": {
+          "url": "Адреса Mealie",
+          "token": "API-токен"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Новий токен",
+        "data": {
+          "token": "API-токен"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Не вдалося підключитися до Mealie",
+      "invalid_auth": "Токен відхилено"
+    },
+    "abort": {
+      "already_configured": "Цей Mealie вже налаштований",
+      "reauth_successful": "Токен оновлено",
+      "single_instance_allowed": "Інтеграцію вже додано"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Налаштування синхронізації",
+        "description": "Список HA з назвою «<префікс><назва списку Mealie>» синхронізується з відповідним списком Mealie. Вебхук (POST, пришвидшує синхронізацію): {webhook}",
+        "data": {
+          "prefix": "Префікс назви списку",
+          "interval": "Інтервал синхронізації",
+          "purge_days": "Видаляти відмічені раз на N днів (0 = ніколи)",
+          "propagate_deletes": "Видалення пункту в HA видаляє його в Mealie"
+        }
+      }
+    }
+  },
+  "entity": {
+    "button": {
+      "sync_now": {
+        "name": "Синхронізувати зараз"
+      }
+    }
+  },
+  "issues": {
+    "ambiguous_food": {
+      "title": "Що означає «{text}»?",
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "Оберіть продукт",
+            "description": "Текст «{text}» підходить до кількох продуктів Mealie. Оберіть потрібний, вибір запам'ятається.",
+            "data": {
+              "food": "Продукт"
+            }
+          }
+        }
+      }
+    }
+  },
+  "services": {
+    "sync_now": {
+      "name": "Синхронізувати зараз",
+      "description": "Запускає синхронізацію негайно."
+    }
+  }
+}
