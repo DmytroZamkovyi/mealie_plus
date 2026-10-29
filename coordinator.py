@@ -223,17 +223,18 @@ class SyncCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._unsub_watch()
             self._unsub_watch = None
         if entity_ids:
-            self._unsub_watch = async_track_state_change_event(
-                self.hass, sorted(entity_ids), lambda _event: self.hass.async_create_task(self.async_request_refresh())
-            )
+            self._unsub_watch = async_track_state_change_event(self.hass, sorted(entity_ids), self._on_change)
+
+    @callback
+    def _on_change(self, _event) -> None:
+        """A watched to-do list changed. Must be a @callback: a plain function would run in a thread."""
+        self.hass.async_create_task(self.async_request_refresh())
 
     @callback
     def async_start_discovery(self) -> None:
         """A new to-do list appears: look for it right away instead of at the next interval."""
         if self._unsub_added is None:
-            self._unsub_added = async_track_state_added_domain(
-                self.hass, "todo", lambda _event: self.hass.async_create_task(self.async_request_refresh())
-            )
+            self._unsub_added = async_track_state_added_domain(self.hass, "todo", self._on_change)
 
     @callback
     def async_stop_watching(self) -> None:
