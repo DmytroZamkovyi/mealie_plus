@@ -1,7 +1,7 @@
 {
   "domain": "shopping_sync",
   "name": "Shopping Sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "config_flow": true,
   "single_config_entry": true,
   "integration_type": "service",

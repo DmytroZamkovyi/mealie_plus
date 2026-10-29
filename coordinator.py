@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import issue_registry as ir
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_added_domain, async_track_state_change_event
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -91,6 +91,7 @@ class SyncCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._states: dict[str, GroupState] = {}
         self._aliases: dict[str, str] = {}  # typed text -> Mealie food id, confirmed in Repairs
         self._unsub_watch = None
+        self._unsub_added = None
 
     # --- storage
     async def async_load(self) -> None:
@@ -116,15 +117,31 @@ class SyncCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return self.config_entry.options.get(CONF_PREFIX, DEFAULT_PREFIX)
 
     def _find_targets(self, list_name: str) -> dict[str, TargetPlatform]:
-        """Todo entities named '<prefix><list name>' plus externally registered targets."""
-        wanted = norm(self._prefix() + list_name)
+        """Todo entities named '<prefix><list name>' plus externally registered targets.
+
+        Tolerant: case, repeated spaces and a missing space after the prefix do not matter.
+        """
+        prefix = norm(self._prefix())  # "mealie:"
+        wanted = norm(list_name)
         found: dict[str, TargetPlatform] = {}
         for state in self.hass.states.async_all("todo"):
-            if norm(state.attributes.get("friendly_name", "")) == wanted:
+            name = norm(state.attributes.get("friendly_name", ""))
+            if name.startswith(prefix) and name[len(prefix):].strip() == wanted:
                 found[state.entity_id] = TodoTarget(self.hass, state.entity_id)
         for tid, target in self.external.get(norm(list_name), {}).items():
             found[f"external:{tid}"] = target
         return found
+
+    def _unmatched_candidates(self, list_names: list[str]) -> list[str]:
+        """Todo lists that look like ours (carry the prefix) but match no Mealie list."""
+        prefix = norm(self._prefix())
+        names = {norm(n) for n in list_names}
+        out = []
+        for state in self.hass.states.async_all("todo"):
+            name = norm(state.attributes.get("friendly_name", ""))
+            if name.startswith(prefix) and name[len(prefix):].strip() not in names:
+                out.append(state.attributes.get("friendly_name", state.entity_id))
+        return out
 
     # --- cycle
     async def _async_update_data(self) -> dict[str, Any]:
@@ -157,6 +174,7 @@ class SyncCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if not targets:
                 continue
             watched |= {t for t in targets if not t.startswith("external:")}
+            _LOGGER.debug("List %s: targets %s", lst["name"], sorted(targets))
             cfg = Config(
                 inbox_list_id=lst["id"],
                 propagate_deletes=bool(opts.get(CONF_PROPAGATE_DELETES, DEFAULT_PROPAGATE_DELETES)),
@@ -186,6 +204,12 @@ class SyncCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "errors": len(result.errors),
                 "purged": result.purged,
             }
+        for name in self._unmatched_candidates([l["name"] for l in lists]):
+            _LOGGER.warning(
+                "To-do list \"%s\" has the prefix but no Mealie list with that name exists (Mealie lists: %s)",
+                name,
+                ", ".join(l["name"] for l in lists),
+            )
         # forget state of lists that no longer exist
         self._states = {k: v for k, v in self._states.items() if k in {l["id"] for l in lists}}
         await self._save()
@@ -204,7 +228,18 @@ class SyncCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
 
     @callback
+    def async_start_discovery(self) -> None:
+        """A new to-do list appears: look for it right away instead of at the next interval."""
+        if self._unsub_added is None:
+            self._unsub_added = async_track_state_added_domain(
+                self.hass, "todo", lambda _event: self.hass.async_create_task(self.async_request_refresh())
+            )
+
+    @callback
     def async_stop_watching(self) -> None:
+        if self._unsub_added:
+            self._unsub_added()
+            self._unsub_added = None
         if self._unsub_watch:
             self._unsub_watch()
             self._unsub_watch = None

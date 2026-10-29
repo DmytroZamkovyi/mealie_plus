@@ -36,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry)
     await coordinator.async_load()
     entry.runtime_data = ShoppingSyncData(coordinator=coordinator)
     coordinator.external = entry.runtime_data.external
+    coordinator.async_start_discovery()
 
     # Webhook: any POST means "something changed, sync now". Meant for a Mealie notifier
     # (Apprise json://) and for an external platform. The id is generated once, kept in the
