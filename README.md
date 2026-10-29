@@ -4,7 +4,17 @@ Keep one shared shopping list in Home Assistant, fed by the shopping lists of [M
 
 [Українська версія](README.uk.md)
 
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DmytroZamkovyi&repository=shopping_sync&category=integration)
+[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=shopping_sync)
+
 > **Status: early development.** The engine and the Home Assistant part are written, but not yet confirmed on a live system and not released, so there is nothing to install from HACS yet.
+
+## Installation
+
+1. HACS → ⋮ → **Custom repositories** → add this repository, category **Integration** (or use the HACS button above).
+2. Download **Shopping Sync**, then restart Home Assistant.
+3. **Settings → Devices & services → Add integration → Shopping Sync** (or use the second button above). You need the Mealie address and an API token.
+4. Create a to-do list named `Mealie: <Mealie list name>` (for example `Mealie: Metro`).
 
 ## What it will do
 

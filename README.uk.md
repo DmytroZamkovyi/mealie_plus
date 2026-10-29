@@ -4,7 +4,17 @@
 
 [English version](README.md)
 
+[![Відкрити цей репозиторій у HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DmytroZamkovyi&repository=shopping_sync&category=integration)
+[![Додати цю інтеграцію в Home Assistant.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=shopping_sync)
+
 > **Статус: рання розробка.** Рушій і частину для Home Assistant написано, але ще не підтверджено на живій системі й не випущено, тож встановлювати через HACS поки нічого.
+
+## Встановлення
+
+1. HACS → ⋮ → **Користувацькі репозиторії** → додайте цей репозиторій, категорія **Integration** (або натисніть кнопку HACS вище).
+2. Завантажте **Shopping Sync** і перезапустіть Home Assistant.
+3. **Налаштування → Пристрої та служби → Додати інтеграцію → Shopping Sync** (або натисніть другу кнопку вище). Потрібні адреса Mealie й API-токен.
+4. Створіть список справ з назвою `Mealie: <назва списку Mealie>` (наприклад `Mealie: Метро`).
 
 ## Що буде робити
 
