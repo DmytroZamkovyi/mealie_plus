@@ -97,3 +97,52 @@ def test_bad_token():
             return False
 
     assert asyncio.run(go())
+
+
+def test_enrichment_calls():
+    async def go():
+        app, state = make_app()
+        seen = {}
+
+        async def food_put(request):
+            seen["food"] = await request.json()
+            return web.json_response({})
+
+        async def image_put(request):
+            form = await request.post()
+            seen["image"] = (form["extension"], form["image"].filename)
+            return web.json_response({})
+
+        async def recipe_patch(request):
+            seen["patch"] = await request.json()
+            return web.json_response({})
+
+        app.router.add_put("/api/foods/{id}", food_put)
+        app.router.add_put("/api/recipes/{slug}/image", image_put)
+        app.router.add_patch("/api/recipes/{slug}", recipe_patch)
+        async with TestServer(app) as srv, ClientSession() as session:
+            c = MealieClient(session, f"http://{srv.host}:{srv.port}", "tok")
+            raw = {"id": "F", "name": "морква", "labelId": None, "aliases": [{"name": "корінь"}]}
+            await c.update_food(raw, "L1", ["морквина"])
+            assert seen["food"]["labelId"] == "L1"
+            assert [a["name"] for a in seen["food"]["aliases"]] == ["корінь", "морквина"]  # existing aliases kept
+            raw["labelId"] = "OLD"
+            await c.update_food(raw, "L1", [])
+            assert seen["food"]["labelId"] == "OLD"  # an existing label is never replaced
+            await c.upload_image("borsch", b"\x89PNG", "png", "image/png")
+            assert seen["image"] == ("png", "image.png")
+            await c.patch_recipe("borsch", {"description": "x"})
+            assert seen["patch"] == {"description": "x"}
+            # units: only unit-less items are touched
+            state["items"] = [raw_item("a"), {**raw_item("b"), "unitId": "U1"}]
+            await c.items()
+            await c.set_units({"a": "U1", "b": "U1"})
+            assert [b["id"] for b in state["puts"][0]] == ["a"]
+
+    asyncio.run(go())
+
+
+def raw_item(i):
+    r = raw("x", "L1", 1.0)
+    r.update({"id": i, "unitId": None, "unit": None})
+    return r

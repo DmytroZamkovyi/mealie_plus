@@ -70,6 +70,7 @@ class ListSource:
 @dataclass
 class ShoppingSyncData:
     coordinator: "SyncCoordinator"
+    enricher: Any = None
     external: dict[str, dict[str, TargetPlatform]] = field(default_factory=dict)  # norm list name -> id -> target
 
 

@@ -10,6 +10,8 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     BooleanSelector,
+    EntitySelector,
+    EntitySelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
     TextSelector,
@@ -18,6 +20,22 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
+    CONF_AI_ALIASES,
+    CONF_AI_DESCRIPTIONS,
+    CONF_AI_ENABLED,
+    CONF_AI_ENTITY,
+    CONF_AI_IMAGE_ENTITY,
+    CONF_AI_IMAGE_LIMIT,
+    CONF_AI_IMAGES,
+    CONF_AI_INTERVAL,
+    CONF_AI_LABELS,
+    CONF_AI_LIMIT,
+    CONF_AI_NUTRITION,
+    CONF_AI_TOOLS,
+    CONF_AI_UNITS,
+    DEFAULT_AI_IMAGE_LIMIT,
+    DEFAULT_AI_INTERVAL,
+    DEFAULT_AI_LIMIT,
     CONF_INTERVAL,
     CONF_PREFIX,
     CONF_PROPAGATE_DELETES,
@@ -113,14 +131,58 @@ class ShoppingSyncConfigFlow(ConfigFlow, domain=DOMAIN):
         return ShoppingSyncOptionsFlow()
 
 
+def _ai_schema(opts: dict[str, Any]) -> vol.Schema:
+    def entity(key: str) -> vol.Optional:
+        return vol.Optional(key, description={"suggested_value": opts.get(key)})
+
+    def flag(key: str) -> vol.Required:
+        return vol.Required(key, default=opts.get(key, False))
+
+    ai_entity = EntitySelector(EntitySelectorConfig(domain="ai_task"))
+    return vol.Schema(
+        {
+            flag(CONF_AI_ENABLED): BooleanSelector(),
+            entity(CONF_AI_ENTITY): ai_entity,
+            entity(CONF_AI_IMAGE_ENTITY): ai_entity,
+            vol.Required(CONF_AI_INTERVAL, default=opts.get(CONF_AI_INTERVAL, DEFAULT_AI_INTERVAL)): NumberSelector(
+                NumberSelectorConfig(min=1, max=720, step=1, unit_of_measurement="h")
+            ),
+            vol.Required(CONF_AI_LIMIT, default=opts.get(CONF_AI_LIMIT, DEFAULT_AI_LIMIT)): NumberSelector(
+                NumberSelectorConfig(min=1, max=500, step=1)
+            ),
+            vol.Required(CONF_AI_IMAGE_LIMIT, default=opts.get(CONF_AI_IMAGE_LIMIT, DEFAULT_AI_IMAGE_LIMIT)): NumberSelector(
+                NumberSelectorConfig(min=0, max=50, step=1)
+            ),
+            flag(CONF_AI_LABELS): BooleanSelector(),
+            flag(CONF_AI_ALIASES): BooleanSelector(),
+            flag(CONF_AI_UNITS): BooleanSelector(),
+            flag(CONF_AI_DESCRIPTIONS): BooleanSelector(),
+            flag(CONF_AI_NUTRITION): BooleanSelector(),
+            flag(CONF_AI_TOOLS): BooleanSelector(),
+            flag(CONF_AI_IMAGES): BooleanSelector(),
+        }
+    )
+
+
 class ShoppingSyncOptionsFlow(OptionsFlow):
+    def __init__(self) -> None:
+        self._base: dict[str, Any] = {}
+
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             user_input[CONF_INTERVAL] = int(user_input[CONF_INTERVAL])
             user_input[CONF_PURGE_DAYS] = int(user_input[CONF_PURGE_DAYS])
-            return self.async_create_entry(data=user_input)
+            self._base = user_input
+            return await self.async_step_ai()
         return self.async_show_form(
             step_id="init",
             data_schema=_options_schema(dict(self.config_entry.options)),
             description_placeholders={"webhook": f"/api/webhook/{self.config_entry.data.get(CONF_WEBHOOK_ID, '')}"},
         )
+
+    async def async_step_ai(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            for key in (CONF_AI_INTERVAL, CONF_AI_LIMIT, CONF_AI_IMAGE_LIMIT):
+                user_input[key] = int(user_input[key])
+            return self.async_create_entry(data={**self._base, **user_input})
+        return self.async_show_form(step_id="ai", data_schema=_ai_schema(dict(self.config_entry.options)))

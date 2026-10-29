@@ -117,29 +117,90 @@ class MealieClient:
             raise MealieError("create returned no item")
         return found[0]["id"]
 
+    @staticmethod
+    def _update_body(raw: dict[str, Any], **override: Any) -> dict[str, Any]:
+        body = {
+            "id": raw["id"],
+            "shoppingListId": raw["shoppingListId"],
+            "checked": bool(raw.get("checked")),
+            "quantity": raw.get("quantity") or 0,
+            "note": raw.get("note") or "",
+            "foodId": raw.get("foodId"),
+            "unitId": raw.get("unitId"),
+            "labelId": raw.get("labelId"),
+            "position": raw.get("position", 0),
+            "extras": raw.get("extras") or {},
+        }
+        body.update(override)
+        return body
+
     async def set_checked(self, ids: list[str], checked: bool) -> None:
-        bodies = []
-        for i in ids:
-            raw = self._raw.get(i)
-            if raw is None:
-                continue
-            bodies.append(
-                {
-                    "id": i,
-                    "shoppingListId": raw["shoppingListId"],
-                    "checked": checked,
-                    "quantity": raw.get("quantity") or 0,
-                    "note": raw.get("note") or "",
-                    "foodId": raw.get("foodId"),
-                    "unitId": raw.get("unitId"),
-                    "labelId": raw.get("labelId"),
-                    "position": raw.get("position", 0),
-                    "extras": raw.get("extras") or {},
-                }
-            )
+        bodies = [self._update_body(self._raw[i], checked=checked) for i in ids if i in self._raw]
         if bodies:
             await self._request("PUT", "/api/households/shopping/items", json=bodies)
+
+    async def set_units(self, units_by_item: dict[str, str]) -> None:
+        """Give items a unit (item id -> unit id). Only items that are still unit-less are touched."""
+        bodies = [
+            self._update_body(self._raw[i], unitId=u)
+            for i, u in units_by_item.items()
+            if i in self._raw and not self._raw[i].get("unitId")
+        ]
+        if bodies:
+            await self._request("PUT", "/api/households/shopping/items", json=bodies)
+
+    def unitless_items(self) -> list[dict[str, Any]]:
+        """Open items with a food and an amount but no unit (from the last items() call)."""
+        return [
+            r
+            for r in self._raw.values()
+            if r.get("food") and not r.get("unitId") and not r.get("checked") and (r.get("quantity") or 0) > 0
+        ]
 
     async def delete(self, ids: list[str]) -> None:
         if ids:
             await self._request("DELETE", "/api/households/shopping/items", params=[("ids", i) for i in ids])
+
+    # --- enrichment (labels, aliases, recipes)
+    async def labels(self) -> dict[str, str]:
+        return {r["name"]: r["id"] for r in await self._paged("/api/groups/labels")}
+
+    async def foods_raw(self) -> list[dict[str, Any]]:
+        return await self._paged("/api/foods")
+
+    async def update_food(self, raw: dict[str, Any], label_id: str | None, aliases: list[str]) -> None:
+        """Set a label (only if the food has none) and add aliases (existing ones are kept)."""
+        existing = [a["name"] for a in raw.get("aliases") or [] if a.get("name")]
+        body = {
+            "id": raw["id"],
+            "name": raw["name"],
+            "pluralName": raw.get("pluralName"),
+            "description": raw.get("description") or "",
+            "extras": raw.get("extras") or {},
+            "labelId": raw.get("labelId") or label_id,
+            "aliases": [{"name": n} for n in [*existing, *aliases]],
+        }
+        await self._request("PUT", f"/api/foods/{raw['id']}", json=body)
+
+    async def recipe_summaries(self) -> list[dict[str, Any]]:
+        return await self._paged("/api/recipes")
+
+    async def recipe(self, slug: str) -> dict[str, Any]:
+        return await self._request("GET", f"/api/recipes/{slug}")
+
+    async def patch_recipe(self, slug: str, body: dict[str, Any]) -> None:
+        await self._request("PATCH", f"/api/recipes/{slug}", json=body)
+
+    async def tools(self) -> list[dict[str, Any]]:
+        return await self._paged("/api/organizers/tools")
+
+    async def create_tool(self, name: str) -> dict[str, Any]:
+        return await self._request("POST", "/api/organizers/tools", json={"name": name})
+
+    async def upload_image(self, slug: str, data: bytes, extension: str, content_type: str) -> None:
+        from aiohttp import FormData
+
+        form = FormData()
+        form.add_field("image", data, filename=f"image.{extension}", content_type=content_type)
+        form.add_field("extension", extension)
+        await self._request("PUT", f"/api/recipes/{slug}/image", data=form)

@@ -37,6 +37,25 @@
           "purge_days": "Remove ticked items every N days (0 = never)",
           "propagate_deletes": "Deleting an item in Home Assistant deletes it in Mealie"
         }
+      },
+      "ai": {
+        "title": "AI enrichment (optional)",
+        "description": "Uses the Home Assistant `ai_task` action (the AI key stays in Home Assistant). Only empty values are filled, existing values are never changed. Runs on a schedule and with a button. Cost is capped by the limits below.",
+        "data": {
+          "ai_enabled": "Enable AI enrichment",
+          "ai_entity": "AI Task entity (empty = default)",
+          "ai_image_entity": "AI Task entity for images (empty = same)",
+          "ai_interval": "Run every N hours",
+          "ai_limit": "Max objects per run",
+          "ai_image_limit": "Max images per run",
+          "ai_labels": "Labels for foods without one",
+          "ai_aliases": "Aliases for foods without any",
+          "ai_units": "Units for list items without a unit",
+          "ai_descriptions": "Descriptions for recipes without one",
+          "ai_nutrition": "Empty nutrition fields in recipes",
+          "ai_tools": "Tools for recipes without any",
+          "ai_images": "Images for recipes without one"
+        }
       }
     }
   },
@@ -44,6 +63,9 @@
     "button": {
       "sync_now": {
         "name": "Sync now"
+      },
+      "enrich_now": {
+        "name": "AI enrichment now"
       }
     }
   },
@@ -67,6 +89,10 @@
     "sync_now": {
       "name": "Sync now",
       "description": "Runs the sync immediately."
+    },
+    "enrich_now": {
+      "name": "AI enrichment now",
+      "description": "Runs the AI enrichment immediately."
     }
   }
 }

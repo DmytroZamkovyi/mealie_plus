@@ -10,10 +10,23 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CONF_TOKEN, CONF_URL, CONF_WEBHOOK_ID, DOMAIN
+from datetime import timedelta
+
+from homeassistant.helpers.event import async_track_time_interval
+
+from .const import (
+    CONF_AI_ENABLED,
+    CONF_AI_INTERVAL,
+    CONF_TOKEN,
+    CONF_URL,
+    CONF_WEBHOOK_ID,
+    DEFAULT_AI_INTERVAL,
+    DOMAIN,
+)
 from .coordinator import ShoppingSyncData, SyncCoordinator
 from .core.group import TargetPlatform
 from .core.units import norm
+from .enrich import Enricher
 from .mealie import MealieClient
 
 PLATFORMS = [Platform.BUTTON]
@@ -26,7 +39,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         for entry in hass.config_entries.async_loaded_entries(DOMAIN):
             await entry.runtime_data.coordinator.async_request_refresh()
 
+    async def _enrich_now(call: ServiceCall) -> None:
+        for entry in hass.config_entries.async_loaded_entries(DOMAIN):
+            await entry.runtime_data.enricher.async_run()
+
     hass.services.async_register(DOMAIN, "sync_now", _sync_now)
+    hass.services.async_register(DOMAIN, "enrich_now", _enrich_now)
     return True
 
 
@@ -34,7 +52,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry)
     client = MealieClient(async_get_clientsession(hass), entry.data[CONF_URL], entry.data[CONF_TOKEN])
     coordinator = SyncCoordinator(hass, entry, client)
     await coordinator.async_load()
-    entry.runtime_data = ShoppingSyncData(coordinator=coordinator)
+    enricher = Enricher(hass, entry, client)
+    await enricher.async_load()
+    entry.runtime_data = ShoppingSyncData(coordinator=coordinator, enricher=enricher)
     coordinator.external = entry.runtime_data.external
     coordinator.async_start_discovery()
 
@@ -51,6 +71,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry)
         return web.Response(status=202)
 
     webhook.async_register(hass, DOMAIN, "Shopping Sync", webhook_id, _handle, allowed_methods=["POST"])
+
+    if entry.options.get(CONF_AI_ENABLED):
+        interval = timedelta(hours=int(entry.options.get(CONF_AI_INTERVAL, DEFAULT_AI_INTERVAL)))
+
+        async def _scheduled(_now) -> None:
+            await enricher.async_run()
+
+        entry.async_on_unload(async_track_time_interval(hass, _scheduled, interval))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_reload))
@@ -71,6 +99,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry
     from .const import STORE_VERSION
 
     await Store(hass, STORE_VERSION, f"{DOMAIN}.{entry.entry_id}").async_remove()
+    await Store(hass, STORE_VERSION, f"{DOMAIN}.{entry.entry_id}.enrich").async_remove()
 
 
 async def _async_reload(hass: HomeAssistant, entry: ShoppingSyncConfigEntry) -> None:
