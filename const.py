@@ -1,8 +1,8 @@
-"""Constants for Shopping Sync."""
+"""Constants for Mealie Plus."""
 
 from __future__ import annotations
 
-DOMAIN = "shopping_sync"
+DOMAIN = "mealie_plus"
 
 CONF_URL = "url"
 CONF_TOKEN = "token"

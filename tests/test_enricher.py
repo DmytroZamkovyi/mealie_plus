@@ -43,7 +43,7 @@ def _stub_homeassistant():
 
 _stub_homeassistant()
 
-from custom_components.shopping_sync.enrich import Enricher  # noqa: E402
+from custom_components.mealie_plus.enrich import Enricher  # noqa: E402
 
 
 class Services:
@@ -142,7 +142,7 @@ def run(opts, answers):
 
 
 def test_foods_only_empty_things_are_filled():
-    ans = {"Shopping Sync foods": json.dumps({"0": {"label": "Овочі", "aliases": ["корінь"]}, "1": {"label": "Овочі", "aliases": ["твердий сир"]}})}
+    ans = {"Mealie Plus foods": json.dumps({"0": {"label": "Овочі", "aliases": ["корінь"]}, "1": {"label": "Овочі", "aliases": ["твердий сир"]}})}
     _, client, _, counts = run({"ai_labels": True, "ai_aliases": True}, ans)
     # f1 has neither label nor aliases; f2 has both and is not even asked about
     assert client.updated == [("f1", "L1", ["корінь"])]
@@ -150,13 +150,13 @@ def test_foods_only_empty_things_are_filled():
 
 
 def test_units_are_set_only_for_unitless_items():
-    ans = {"Shopping Sync units": json.dumps({"0": "штука"})}
+    ans = {"Mealie Plus units": json.dumps({"0": "штука"})}
     hass, client, _, counts = run({"ai_units": True}, ans)
     assert client.units_set == {"i1": "U1"} and counts["units"] == 1
 
 
 def test_recipe_text_fills_only_empty_fields_and_creates_missing_tools():
-    ans = {"Shopping Sync recipe": json.dumps({
+    ans = {"Mealie Plus recipe": json.dumps({
         "description": "Червоний суп.",
         "nutrition": {"calories": 999, "proteinContent": 5, "fatContent": 7},
         "tools": ["Каструля", "Блендер"],
@@ -171,15 +171,15 @@ def test_recipe_text_fills_only_empty_fields_and_creates_missing_tools():
 
 
 def test_nothing_is_asked_twice_within_the_retry_window():
-    ans = {"Shopping Sync foods": "{}"}
+    ans = {"Mealie Plus foods": "{}"}
     hass = Hass(ans)
     client = Client()
     e = Enricher(hass, Entry(ai_labels=True), client)
     asyncio.run(e.async_run())
     asyncio.run(e.async_run())
-    assert len([c for c in hass.services.calls if c[1] == "Shopping Sync foods"]) == 1
+    assert len([c for c in hass.services.calls if c[1] == "Mealie Plus foods"]) == 1
 
 
 def test_garbage_answer_changes_nothing():
-    _, client, _, counts = run({"ai_labels": True, "ai_aliases": True}, {"Shopping Sync foods": "вибачте, не можу"})
+    _, client, _, counts = run({"ai_labels": True, "ai_aliases": True}, {"Mealie Plus foods": "вибачте, не можу"})
     assert client.updated == [] and counts["foods"] == 0

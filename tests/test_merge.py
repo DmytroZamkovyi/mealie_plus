@@ -1,5 +1,5 @@
-from custom_components.shopping_sync.core.merge import Entry, build_lines, render
-from custom_components.shopping_sync.core.tables import default_tables
+from custom_components.mealie_plus.core.merge import Entry, build_lines, render
+from custom_components.mealie_plus.core.tables import default_tables
 
 T = default_tables()
 

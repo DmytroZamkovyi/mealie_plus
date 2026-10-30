@@ -9,6 +9,7 @@ Safety rules:
 - A target that cannot be read is skipped. An unreadable list is never treated as an
   empty one, otherwise every line would look deleted.
 - A target that left the group simply loses its state; nothing is deleted anywhere.
+- A target that has no state yet must be empty, otherwise its items would be taken for typed text.
 - The weekly purge of ticked items runs once per group, not once per target.
 """
 
@@ -63,6 +64,7 @@ class GroupResult:
     issues: list[Issue] = field(default_factory=list)
     purged: int = 0
     skipped: list[str] = field(default_factory=list)  # targets that could not be read
+    rejected: list[str] = field(default_factory=list)  # new targets that were not empty
 
 
 async def sync_group(
@@ -99,6 +101,12 @@ async def sync_group(
         except Exception as err:  # noqa: BLE001
             result.skipped.append(tid)
             result.errors.append(f"{tid}: cannot read: {err}")
+            continue
+        if tid not in new.targets and ha_items:
+            # A target we have never synced must start empty: its items would be read as text typed
+            # by a person and added to the source a second time.
+            result.rejected.append(tid)
+            result.errors.append(f"{tid}: a new target list must be empty, clear it first")
             continue
         src_items = await source.items()
         plan = plan_sync(src_items, ha_items, new.targets.get(tid, State()), plain, tables, now)

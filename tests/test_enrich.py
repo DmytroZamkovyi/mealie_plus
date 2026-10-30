@@ -1,4 +1,4 @@
-from custom_components.shopping_sync.core.enrich import (
+from custom_components.mealie_plus.core.enrich import (
     empty_nutrition_keys,
     food_prompt,
     parse_json,

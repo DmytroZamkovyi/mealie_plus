@@ -1,7 +1,7 @@
 {
-  "domain": "shopping_sync",
-  "name": "Shopping Sync",
-  "version": "0.2.1",
+  "domain": "mealie_plus",
+  "name": "Mealie Plus",
+  "version": "0.3.0",
   "config_flow": true,
   "single_config_entry": true,
   "integration_type": "service",
@@ -10,6 +10,6 @@
   "after_dependencies": ["ai_task"],
   "requirements": [],
   "codeowners": [],
-  "issue_tracker": "https://github.com/DmytroZamkovyi/shopping_sync/issues",
-  "documentation": "https://github.com/DmytroZamkovyi/shopping_sync"
+  "issue_tracker": "https://github.com/DmytroZamkovyi/mealie_plus/issues",
+  "documentation": "https://github.com/DmytroZamkovyi/mealie_plus"
 }

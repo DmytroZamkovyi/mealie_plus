@@ -3,8 +3,8 @@ import asyncio
 from aiohttp import ClientSession, web
 from aiohttp.test_utils import TestServer
 
-from custom_components.shopping_sync.core.models import SrcNew
-from custom_components.shopping_sync.mealie import MealieAuthError, MealieClient
+from custom_components.mealie_plus.core.models import SrcNew
+from custom_components.mealie_plus.mealie import MealieAuthError, MealieClient
 
 
 def make_app():

@@ -1,4 +1,4 @@
-"""Expose the repository root as the package `custom_components.shopping_sync`.
+"""Expose the repository root as the package `custom_components.mealie_plus`.
 
 The integration lives in the repository root (HACS `content_in_root`), so tests
 register the root directory under the import name Home Assistant would use.
@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 namespace = types.ModuleType("custom_components")
 namespace.__path__ = []
-package = types.ModuleType("custom_components.shopping_sync")
+package = types.ModuleType("custom_components.mealie_plus")
 package.__path__ = [str(ROOT)]
-namespace.shopping_sync = package
+namespace.mealie_plus = package
 sys.modules.setdefault("custom_components", namespace)
-sys.modules.setdefault("custom_components.shopping_sync", package)
+sys.modules.setdefault("custom_components.mealie_plus", package)

@@ -1,7 +1,7 @@
 import pytest
 
-from custom_components.shopping_sync.core.parse import parse
-from custom_components.shopping_sync.core.units import fmt_qty, lookup_unit, plural_form, unit_key
+from custom_components.mealie_plus.core.parse import parse
+from custom_components.mealie_plus.core.units import fmt_qty, lookup_unit, plural_form, unit_key
 
 
 @pytest.mark.parametrize(

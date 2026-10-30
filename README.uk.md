@@ -1,19 +1,19 @@
-# Shopping Sync
+# Mealie Plus
 
-Один спільний список покупок у Home Assistant, який наповнюється зі списків [Mealie](https://mealie.io), з розумним злиттям і двосторонніми відмітками.
+Інтеграція Home Assistant для [Mealie](https://mealie.io): списки покупок, що зливаються й відмічаються в обидва боки в усіх користувачів, та необов'язкове заповнення порожнього в Mealie через ШІ (мітки, одиниці, аліаси, описи рецептів, КБЖУ, інструменти, картинки).
 
 [English version](README.md)
 
-[![Відкрити цей репозиторій у HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DmytroZamkovyi&repository=shopping_sync&category=integration)
-[![Додати цю інтеграцію в Home Assistant.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=shopping_sync)
+[![Відкрити цей репозиторій у HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DmytroZamkovyi&repository=mealie_plus&category=integration)
+[![Додати цю інтеграцію в Home Assistant.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=mealie_plus)
 
-> **Статус: рання розробка.** Рушій і частину для Home Assistant написано, але ще не підтверджено на живій системі й не випущено, тож встановлювати через HACS поки нічого.
+> **Статус: рання версія.** Синхронізація списків працює в автора; AI-збагачення нове й менш перевірене. Можливі шорсткості, пишіть у Issues.
 
 ## Встановлення
 
 1. HACS → ⋮ → **Користувацькі репозиторії** → додайте цей репозиторій, категорія **Integration** (або натисніть кнопку HACS вище).
-2. Завантажте **Shopping Sync** і перезапустіть Home Assistant.
-3. **Налаштування → Пристрої та служби → Додати інтеграцію → Shopping Sync** (або натисніть другу кнопку вище). Потрібні адреса Mealie й API-токен.
+2. Завантажте **Mealie Plus** і перезапустіть Home Assistant.
+3. **Налаштування → Пристрої та служби → Додати інтеграцію → Mealie Plus** (або натисніть другу кнопку вище). Потрібні адреса Mealie й API-токен.
 4. Створіть список справ з назвою `Mealie: <назва списку Mealie>` (наприклад `Mealie: Метро`).
 
 ## Що буде робити

@@ -69,7 +69,7 @@ def _options_schema(opts: dict[str, Any]) -> vol.Schema:
     )
 
 
-class ShoppingSyncConfigFlow(ConfigFlow, domain=DOMAIN):
+class MealiePlusConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def _validate(self, url: str, token: str) -> str | None:
@@ -91,7 +91,7 @@ class ShoppingSyncConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = err
             else:
                 return self.async_create_entry(
-                    title="Shopping Sync",
+                    title="Mealie Plus",
                     data={CONF_URL: url, CONF_TOKEN: user_input[CONF_TOKEN]},
                     options={},
                 )
@@ -128,7 +128,7 @@ class ShoppingSyncConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry) -> OptionsFlow:
-        return ShoppingSyncOptionsFlow()
+        return MealiePlusOptionsFlow()
 
 
 def _ai_schema(opts: dict[str, Any]) -> vol.Schema:
@@ -164,7 +164,7 @@ def _ai_schema(opts: dict[str, Any]) -> vol.Schema:
     )
 
 
-class ShoppingSyncOptionsFlow(OptionsFlow):
+class MealiePlusOptionsFlow(OptionsFlow):
     def __init__(self) -> None:
         self._base: dict[str, Any] = {}
 

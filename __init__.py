@@ -1,4 +1,4 @@
-"""Shopping Sync: one shared shopping list across Mealie and Home Assistant."""
+"""Mealie Plus: one shared shopping list across Mealie and Home Assistant."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from .const import (
     DEFAULT_AI_INTERVAL,
     DOMAIN,
 )
-from .coordinator import ShoppingSyncData, SyncCoordinator
+from .coordinator import MealiePlusData, SyncCoordinator
 from .core.group import TargetPlatform
 from .core.units import norm
 from .enrich import Enricher
@@ -31,7 +31,7 @@ from .mealie import MealieClient
 
 PLATFORMS = [Platform.BUTTON]
 
-type ShoppingSyncConfigEntry = ConfigEntry[ShoppingSyncData]
+type MealiePlusConfigEntry = ConfigEntry[MealiePlusData]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -48,13 +48,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: MealiePlusConfigEntry) -> bool:
     client = MealieClient(async_get_clientsession(hass), entry.data[CONF_URL], entry.data[CONF_TOKEN])
     coordinator = SyncCoordinator(hass, entry, client)
     await coordinator.async_load()
     enricher = Enricher(hass, entry, client)
     await enricher.async_load()
-    entry.runtime_data = ShoppingSyncData(coordinator=coordinator, enricher=enricher)
+    entry.runtime_data = MealiePlusData(coordinator=coordinator, enricher=enricher)
     coordinator.external = entry.runtime_data.external
     coordinator.async_start_discovery()
 
@@ -70,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry)
         hass.async_create_task(coordinator.async_request_refresh())
         return web.Response(status=202)
 
-    webhook.async_register(hass, DOMAIN, "Shopping Sync", webhook_id, _handle, allowed_methods=["POST"])
+    webhook.async_register(hass, DOMAIN, "Mealie Plus", webhook_id, _handle, allowed_methods=["POST"])
 
     if entry.options.get(CONF_AI_ENABLED):
         interval = timedelta(hours=int(entry.options.get(CONF_AI_INTERVAL, DEFAULT_AI_INTERVAL)))
@@ -86,14 +86,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry)
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: MealiePlusConfigEntry) -> bool:
     entry.runtime_data.coordinator.async_stop_watching()
     if webhook_id := entry.data.get(CONF_WEBHOOK_ID):
         webhook.async_unregister(hass, webhook_id)
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-async def async_remove_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry) -> None:
+async def async_remove_entry(hass: HomeAssistant, entry: MealiePlusConfigEntry) -> None:
     from homeassistant.helpers.storage import Store
 
     from .const import STORE_VERSION
@@ -102,7 +102,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ShoppingSyncConfigEntry
     await Store(hass, STORE_VERSION, f"{DOMAIN}.{entry.entry_id}.enrich").async_remove()
 
 
-async def _async_reload(hass: HomeAssistant, entry: ShoppingSyncConfigEntry) -> None:
+async def _async_reload(hass: HomeAssistant, entry: MealiePlusConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 

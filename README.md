@@ -1,19 +1,19 @@
-# Shopping Sync
+# Mealie Plus
 
-Keep one shared shopping list in Home Assistant, fed by the shopping lists of [Mealie](https://mealie.io), with smart merging and two-way ticking.
+A Home Assistant integration for [Mealie](https://mealie.io): shopping lists that merge and tick in both directions across all users, plus optional AI filling of whatever is empty in Mealie (labels, units, aliases, recipe descriptions, nutrition, tools, images).
 
 [Українська версія](README.uk.md)
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DmytroZamkovyi&repository=shopping_sync&category=integration)
-[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=shopping_sync)
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=DmytroZamkovyi&repository=mealie_plus&category=integration)
+[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=mealie_plus)
 
-> **Status: early development.** The engine and the Home Assistant part are written, but not yet confirmed on a live system and not released, so there is nothing to install from HACS yet.
+> **Status: early version.** Shopping list sync works on the author's setup; the AI enrichment is new and less tested. Expect rough edges and please open issues.
 
 ## Installation
 
 1. HACS → ⋮ → **Custom repositories** → add this repository, category **Integration** (or use the HACS button above).
-2. Download **Shopping Sync**, then restart Home Assistant.
-3. **Settings → Devices & services → Add integration → Shopping Sync** (or use the second button above). You need the Mealie address and an API token.
+2. Download **Mealie Plus**, then restart Home Assistant.
+3. **Settings → Devices & services → Add integration → Mealie Plus** (or use the second button above). You need the Mealie address and an API token.
 4. Create a to-do list named `Mealie: <Mealie list name>` (for example `Mealie: Metro`).
 
 ## What it will do

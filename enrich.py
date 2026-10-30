@@ -90,7 +90,7 @@ class Enricher:
         return core.parse_json((resp or {}).get("data"))
 
     async def _image(self, instructions: str) -> tuple[bytes, str, str] | None:
-        data: dict[str, Any] = {"task_name": "Shopping Sync recipe image", "instructions": instructions}
+        data: dict[str, Any] = {"task_name": "Mealie Plus recipe image", "instructions": instructions}
         if entity := self._opts.get(CONF_AI_IMAGE_ENTITY) or self._opts.get(CONF_AI_ENTITY):
             data["entity_id"] = entity
         resp = await self.hass.services.async_call(
@@ -164,7 +164,7 @@ class Enricher:
             batch = todo[i : i + BATCH]
             names = [f["name"].replace("\n", " ").strip() for f in batch]
             answer = await self._ask(
-                "Shopping Sync foods", core.food_prompt(names, list(labels), want_labels, want_aliases)
+                "Mealie Plus foods", core.food_prompt(names, list(labels), want_labels, want_aliases)
             )
             patches = core.validate_foods(
                 answer, [(f["id"], f["name"]) for f in batch], labels, taken, want_labels, want_aliases
@@ -192,7 +192,7 @@ class Enricher:
         for i in range(0, len(todo), BATCH):
             batch = todo[i : i + BATCH]
             answer = await self._ask(
-                "Shopping Sync units",
+                "Mealie Plus units",
                 core.unit_prompt([(r["food"]["name"].replace("\n", " "), r["quantity"]) for r in batch], list(units)),
             )
             chosen = core.validate_units(answer, [r["id"] for r in batch], units)
@@ -243,7 +243,7 @@ class Enricher:
                 need_tools = want_tools and not recipe.get("tools")
                 if need_desc or need_keys or need_tools:
                     answer = await self._ask(
-                        "Shopping Sync recipe",
+                        "Mealie Plus recipe",
                         core.recipe_prompt(
                             recipe["name"], ingredients, recipe.get("recipeServings") or recipe.get("recipeYield"),
                             list(tools), need_desc, need_keys, need_tools, steps,

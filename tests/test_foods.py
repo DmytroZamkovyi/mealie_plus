@@ -1,4 +1,4 @@
-from custom_components.shopping_sync.core.foods import FoodIndex, FoodRef
+from custom_components.mealie_plus.core.foods import FoodIndex, FoodRef
 
 FOODS = [
     FoodRef("f1", "картопля"),

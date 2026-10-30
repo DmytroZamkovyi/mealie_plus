@@ -1,8 +1,8 @@
 import asyncio
 from datetime import timedelta
 
-from custom_components.shopping_sync.core.group import GroupState, sync_group
-from custom_components.shopping_sync.core.models import HaItem, SrcItem
+from custom_components.mealie_plus.core.group import GroupState, sync_group
+from custom_components.mealie_plus.core.models import HaItem, SrcItem
 
 from test_engine import CFG, T0, TABLES
 
@@ -178,3 +178,12 @@ def test_group_state_json_round_trip():
     back = GroupState.from_json(st.to_json())
     assert back.to_json() == st.to_json()
     assert not asyncio.run(sync_group(s, {"a": a}, back, CFG, TABLES, T0)).plans["a"].has_changes
+
+
+def test_new_target_with_items_is_rejected_not_read_as_typed_text():
+    s, a = Source(), Target("a")
+    s.add("1", "часник", 13, "зубчик")
+    asyncio.run(a.add("Часник, 13 зубчиків", "", False))  # left over from an earlier install
+    res = asyncio.run(sync_group(s, {"a": a}, GroupState(), CFG, TABLES, T0))
+    assert res.rejected == ["a"] and "a" not in res.state.targets
+    assert [i.qty for i in s.src.values()] == [13]  # nothing was added twice

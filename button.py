@@ -23,7 +23,7 @@ class _Base(ButtonEntity):
         self._entry = entry
         self._attr_translation_key = key
         self._attr_unique_id = f"{entry.entry_id}_{key}"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, entry.entry_id)}, name="Shopping Sync")
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, entry.entry_id)}, name="Mealie Plus")
 
 
 class SyncNowButton(_Base):

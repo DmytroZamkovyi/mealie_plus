@@ -1,10 +1,10 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from custom_components.shopping_sync.core.engine import execute, plan_sync
-from custom_components.shopping_sync.core.foods import FoodIndex, FoodRef
-from custom_components.shopping_sync.core.models import Config, HaItem, SrcItem, State
-from custom_components.shopping_sync.core.tables import default_tables
+from custom_components.mealie_plus.core.engine import execute, plan_sync
+from custom_components.mealie_plus.core.foods import FoodIndex, FoodRef
+from custom_components.mealie_plus.core.models import Config, HaItem, SrcItem, State
+from custom_components.mealie_plus.core.tables import default_tables
 
 FOODS = [
     FoodRef("f_garlic", "часник"),
